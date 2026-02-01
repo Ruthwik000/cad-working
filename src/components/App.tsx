@@ -38,76 +38,89 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
     };
   }, []);
 
-  const zIndexOfPanelsDependingOnFocus = {
-    editor: {
-      editor: 3,
-      viewer: 1,
-      customizer: 0,
-    },
-    viewer: {
-      editor: 2,
-      viewer: 3,
-      customizer: 1,
-    },
-    customizer: {
-      editor: 0,
-      viewer: 1,
-      customizer: 3,
-    }
-  }
-
-  const layout = state.view.layout
-  const mode = state.view.layout.mode;
-  function getPanelStyle(id: MultiLayoutComponentId): CSSProperties {
-    if (layout.mode === 'multi') {
-      const itemCount = (layout.editor ? 1 : 0) + (layout.viewer ? 1 : 0) + (layout.customizer ? 1 : 0)
-      return {
-        flex: 1,
-        maxWidth: Math.floor(100/itemCount) + '%',
-        display: (state.view.layout as any)[id] ? 'flex' : 'none'
-      }
-    } else {
-      return {
-        flex: 1,
-        zIndex: Number((zIndexOfPanelsDependingOnFocus as any)[id][layout.focus]),
-      }
-    }
-  }
-
   return (
     <ModelContext.Provider value={model}>
       <FSContext.Provider value={fs}>
-        <AIChatPanel 
-          visible={state.view.aiChatVisible ?? false} 
-          onClose={() => model.toggleAIChat()} 
-        />
-        <div className='flex flex-column' style={{
-            flex: 1,
-            marginLeft: state.view.aiChatVisible ? '400px' : '0',
-            transition: 'margin-left 0.3s ease'
-          }}>
-          
+        {/* VS Code-like Layout */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          width: '100vw',
+          overflow: 'hidden'
+        }}>
+          {/* Top Header */}
           <PanelSwitcher />
-    
-          <div className={mode === 'multi' ? 'flex flex-row' : 'flex flex-column'}
-              style={mode === 'multi' ? {flex: 1} : {
-                flex: 1,
-                position: 'relative'
-              }}>
 
-            <EditorPanel className={`
-              opacity-animated
-              ${layout.mode === 'single' && layout.focus !== 'editor' ? 'opacity-0' : ''}
-              ${layout.mode === 'single' ? 'absolute-fill' : ''}
-            `} style={getPanelStyle('editor')} />
-            <ViewerPanel className={layout.mode === 'single' ? `absolute-fill` : ''} style={getPanelStyle('viewer')} />
-            <CustomizerPanel className={`
-              opacity-animated
-              ${layout.mode === 'single' && layout.focus !== 'customizer' ? 'opacity-0' : ''}
-              ${layout.mode === 'single' ? `absolute-fill` : ''}
-            `} style={getPanelStyle('customizer')} />
+          {/* Main Content Area */}
+          <div style={{
+            display: 'flex',
+            flex: 1,
+            overflow: 'hidden'
+          }}>
+            {/* Left Sidebar - Properties/Customizer */}
+            <div style={{
+              width: '300px',
+              borderRight: '1px solid var(--surface-border)',
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: 'var(--surface-ground)'
+            }}>
+              <CustomizerPanel 
+                className=""
+                style={{ flex: 1, display: 'flex' }} 
+              />
+            </div>
+
+            {/* Center Area - Editor + Viewer */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden'
+            }}>
+              {/* Top: 3D Preview */}
+              <div style={{
+                height: '50%',
+                borderBottom: '1px solid var(--surface-border)',
+                display: 'flex'
+              }}>
+                <ViewerPanel 
+                  className=""
+                  style={{ flex: 1, display: 'flex' }} 
+                />
+              </div>
+
+              {/* Bottom: Code Editor */}
+              <div style={{
+                height: '50%',
+                display: 'flex'
+              }}>
+                <EditorPanel 
+                  className=""
+                  style={{ flex: 1, display: 'flex' }} 
+                />
+              </div>
+            </div>
+
+            {/* Right Sidebar - AI Chat */}
+            {state.view.aiChatVisible && (
+              <div style={{
+                width: '400px',
+                borderLeft: '1px solid var(--surface-border)',
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: 'var(--surface-ground)'
+              }}>
+                <AIChatPanel 
+                  visible={true} 
+                  onClose={() => model.toggleAIChat()} 
+                />
+              </div>
+            )}
           </div>
 
+          {/* Bottom Footer */}
           <Footer />
           <ConfirmDialog />
         </div>

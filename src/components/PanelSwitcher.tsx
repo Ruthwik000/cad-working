@@ -1,8 +1,6 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 
 import React, { useContext } from 'react';
-import { SingleLayoutComponentId } from '../state/app-state.ts'
-import { TabMenu } from 'primereact/tabmenu';
 import { ToggleButton } from 'primereact/togglebutton';
 import { ModelContext } from './contexts.ts';
 
@@ -12,62 +10,42 @@ export default function PanelSwitcher() {
 
   const state = model.state;
 
-  const singleTargets: {id: SingleLayoutComponentId, icon: string, label: string}[] = [
-    { id: 'editor', icon: 'pi pi-pencil', label: 'Edit' },
-    { id: 'viewer', icon: 'pi pi-box', label: 'View' },
-  ];
-  if ((state.parameterSet?.parameters?.length ?? 0) > 0) {
-    singleTargets.push({ id: 'customizer', icon: 'pi pi-sliders-h', label: 'Customize' });
-  }
-  const multiTargets = singleTargets;
-
   return (
-    <div className="">
-      <div className='flex flex-row' style={{
-        margin: '5px',
-        position: 'relative',
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0.5rem 1rem',
+      backgroundColor: 'var(--surface-card)',
+      borderBottom: '1px solid var(--surface-border)',
+      minHeight: '50px'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem'
       }}>
-
-        {state.view.layout.mode === 'multi'
-          ?   <div className='flex flex-row gap-1' style={{
-            justifyContent: 'center',
-            flex: 1,
-            margin: '5px'
-          }}>
-                {multiTargets.map(({icon, label, id}) => 
-                  <ToggleButton
-                    key={id}
-                    checked={(state.view.layout as any)[id]}
-                    onLabel={label}
-                    offLabel={label}
-                    onIcon={icon}
-                    offIcon={icon}
-                    onChange={e => model.changeMultiVisibility(id, e.value)}
-                    />
-                  )}
-              </div>
-          :   <>
-                <TabMenu
-                  activeIndex={singleTargets.map(t => t.id).indexOf(state.view.layout.focus)}
-                  style={{
-                    flex: 1,
-                  }}
-                  model={singleTargets.map(({icon, label, id}) => 
-                  ({icon, label, command: () => model.changeSingleVisibility(id)}))} />
-              </>
-        }
-        
+        <h2 style={{ 
+          margin: 0, 
+          fontSize: '1.2rem',
+          fontWeight: 600 
+        }}>
+          OpenSCAD Playground
+        </h2>
+      </div>
+      
+      <div style={{
+        display: 'flex',
+        gap: '0.5rem',
+        alignItems: 'center'
+      }}>
         <ToggleButton
           checked={state.view.aiChatVisible ?? false}
-          onLabel="AI"
-          offLabel="AI"
+          onLabel="AI Assistant"
+          offLabel="AI Assistant"
           onIcon="pi pi-sparkles"
           offIcon="pi pi-sparkles"
           onChange={() => model.toggleAIChat()}
-          style={{
-            marginLeft: '5px',
-            marginRight: '5px',
-          }}
           />
       </div>
     </div>

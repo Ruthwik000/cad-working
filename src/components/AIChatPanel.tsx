@@ -177,17 +177,10 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
 
   return (
     <div style={{
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      bottom: 0,
-      width: '400px',
-      backgroundColor: 'var(--surface-ground)',
-      borderRight: '1px solid var(--surface-border)',
       display: 'flex',
       flexDirection: 'column',
-      zIndex: 1000,
-      boxShadow: '2px 0 8px rgba(0,0,0,0.1)'
+      height: '100%',
+      backgroundColor: 'var(--surface-ground)'
     }}>
       {/* Header */}
       <div style={{
