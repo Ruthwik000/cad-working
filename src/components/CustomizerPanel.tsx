@@ -8,7 +8,6 @@ import { Slider } from 'primereact/slider';
 import { Checkbox } from 'primereact/checkbox';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
-import { Fieldset } from 'primereact/fieldset';
 import { Parameter } from '../state/customizer-types.ts';
 import { Button } from 'primereact/button';
 
@@ -48,161 +47,313 @@ export default function CustomizerPanel({className, style}: {className?: string,
         style={{
           display: 'flex',
           flexDirection: 'column',
-          maxHeight: '80vh',
-          overflow: 'scroll',
+          height: '100%',
+          overflow: 'auto',
+          backgroundColor: '#0a0a0a',
           ...style,
-          bottom: 'unset',
         }}>
-      {groups.map(([group, params]) => (
-        <Fieldset 
-            style={{
-              margin: '5px 10px 5px 10px',
-              // backgroundColor: 'transparent',
-              backgroundColor: 'rgba(255,255,255,0.4)',
-            }}
-            onCollapse={() => setTabOpen(group, false)}
-            onExpand={() => setTabOpen(group, true)}
-            collapsed={collapsedTabSet.has(group)}
-            key={group}
-            legend={group}
-            toggleable={true}>
-          {params.map((param) => (
-            <ParameterInput
-              key={param.name}
-              value={(state.params.vars ?? {})[param.name]}
-              param={param}
-              handleChange={handleChange} />
-          ))}
-        </Fieldset>
-      ))}
+      {/* Header */}
+      <div style={{
+        padding: '1rem 1.5rem',
+        borderBottom: '1px solid #222222',
+        backgroundColor: '#0a0a0a'
+      }}>
+        <h3 style={{
+          margin: 0,
+          fontSize: '1rem',
+          fontWeight: 500,
+          color: '#ffffff',
+          letterSpacing: '0.5px'
+        }}>
+          Parameters
+        </h3>
+      </div>
+
+      {/* Parameters List */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '0.5rem' }}>
+        {groups.length === 0 ? (
+          <div style={{
+            padding: '2rem 1rem',
+            textAlign: 'center',
+            color: '#666666',
+            fontSize: '0.9rem'
+          }}>
+            No parameters available
+          </div>
+        ) : (
+          groups.map(([group, params]) => (
+            <div key={group} style={{
+              marginBottom: '0.5rem',
+              backgroundColor: '#000000',
+              border: '1px solid #222222',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              {/* Group Header */}
+              <button
+                onClick={() => setTabOpen(group, collapsedTabSet.has(group))}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  backgroundColor: '#0a0a0a',
+                  border: 'none',
+                  borderBottom: collapsedTabSet.has(group) ? 'none' : '1px solid #222222',
+                  color: '#ffffff',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#141414'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0a0a0a'}
+              >
+                <span>{group}</span>
+                <i className={`pi ${collapsedTabSet.has(group) ? 'pi-chevron-right' : 'pi-chevron-down'}`} 
+                   style={{ fontSize: '0.8rem', color: '#666666' }} />
+              </button>
+
+              {/* Group Content */}
+              {!collapsedTabSet.has(group) && (
+                <div style={{ padding: '0.5rem' }}>
+                  {params.map((param) => (
+                    <ParameterInput
+                      key={param.name}
+                      value={(state.params.vars ?? {})[param.name]}
+                      param={param}
+                      handleChange={handleChange} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };
 
 function ParameterInput({param, value, className, style, handleChange}: {param: Parameter, value: any, className?: string, style?: CSSProperties, handleChange: (key: string, value: any) => void}) {
+  const hasChanged = value !== undefined && JSON.stringify(value) !== JSON.stringify(param.initial);
+  
   return (
     <div 
       style={{
-        flex: 1,
+        padding: '0.75rem',
+        marginBottom: '0.5rem',
+        backgroundColor: '#0a0a0a',
+        border: '1px solid #1a1a1a',
+        borderRadius: '4px',
         ...style,
-        display: 'flex',
-        flexDirection: 'column',
       }}>
-      <div 
-        style={{
-          flex: 1,
-          display: 'flex',
-          margin: '10px -10px 10px 5px',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-        <div 
-          style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
+      {/* Label Section */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '0.5rem'
+      }}>
+        <div style={{ flex: 1 }}>
+          <label style={{
+            display: 'block',
+            fontSize: '0.85rem',
+            fontWeight: 500,
+            color: '#ffffff',
+            marginBottom: '0.25rem'
           }}>
-          <label><b>{param.name}</b></label>
-          <div>{param.caption}</div>
+            {param.name}
+          </label>
+          {param.caption && (
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#666666'
+            }}>
+              {param.caption}
+            </div>
+          )}
         </div>
-        <div 
-          style={{
+        
+        {/* Reset Button */}
+        {hasChanged && (
+          <Button
+            onClick={() => handleChange(param.name, param.initial)}
+            icon='pi pi-refresh'
+            text
+            rounded
+            style={{
+              width: '28px',
+              height: '28px',
+              padding: 0,
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#666666'
+            }}
+            tooltip="Reset to default"
+            tooltipOptions={{position: 'left'}}
+          />
+        )}
+      </div>
+
+      {/* Input Section */}
+      <div style={{ marginTop: '0.5rem' }}>
+        {/* Dropdown for number with options */}
+        {param.type === 'number' && 'options' in param && (
+          <Dropdown
+            value={value ?? param.initial}
+            options={param.options}
+            onChange={(e) => handleChange(param.name, e.value)}
+            optionLabel="name"
+            optionValue="value"
+            style={{
+              width: '100%',
+              backgroundColor: '#0f0f0f',
+              border: '1px solid #222222',
+              color: '#ffffff'
+            }}
+          />
+        )}
+        
+        {/* Dropdown for string with options */}
+        {param.type === 'string' && param.options && (
+          <Dropdown
+            value={value ?? param.initial}
+            options={param.options}
+            onChange={(e) => handleChange(param.name, e.value)}
+            optionLabel="name"
+            optionValue="value"
+            style={{
+              width: '100%',
+              backgroundColor: '#0f0f0f',
+              border: '1px solid #222222',
+              color: '#ffffff'
+            }}
+          />
+        )}
+        
+        {/* Checkbox for boolean */}
+        {param.type === 'boolean' && (
+          <div style={{
             display: 'flex',
-            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            padding: '0.5rem',
+            backgroundColor: '#0f0f0f',
+            border: '1px solid #222222',
+            borderRadius: '4px'
           }}>
-          {param.type === 'number' && 'options' in param && (
-            <Dropdown
-              style={{flex: 1}}
-              value={value || param.initial}
-              options={param.options}
-              onChange={(e) => handleChange(param.name, e.value)}
-              optionLabel="name"
-              optionValue="value"
-            />
-          )}
-          {param.type === 'string' && param.options && (
-            <Dropdown
-              value={value || param.initial}
-              options={param.options}
-              onChange={(e) => handleChange(param.name, e.value)}
-              optionLabel="name"
-              optionValue="value"
-            />
-          )}
-          {param.type === 'boolean' && (
             <Checkbox
               checked={value ?? param.initial}
               onChange={(e) => handleChange(param.name, e.checked)}
+              style={{
+                backgroundColor: (value ?? param.initial) ? '#ffffff' : '#0f0f0f',
+                borderColor: '#222222'
+              }}
             />
-          )}
-          {!Array.isArray(param.initial) && param.type === 'number' && !('options' in param) && (
-            <InputNumber
-              value={value || param.initial}
-              showButtons
-              size={5}
-              onValueChange={(e) => handleChange(param.name, e.value)}
-            />
-          )}
-          {param.type === 'string' && !param.options && (
-            <InputText
-              style={{flex: 1}}
-              value={value || param.initial}
-              onChange={(e) => handleChange(param.name, e.target.value)}
-            />
-          )}
-          {Array.isArray(param.initial) && 'min' in param && (
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'row',
+            <label style={{
+              marginLeft: '0.5rem',
+              fontSize: '0.85rem',
+              color: '#a0a0a0'
             }}>
-              {param.initial.map((_, index) => (
-                <InputNumber
-                  style={{flex: 1}}
-                  key={index}
-                  value={value?.[index] ?? (param.initial as any)[index]}
-                  min={param.min}
-                  max={param.max}
-                  showButtons
-                  size={5}
-                  step={param.step}
-                  onValueChange={(e) => {
-                    const newArray = [...(value ?? param.initial)];
-                    newArray[index] = e.value;
-                    handleChange(param.name, newArray);
-                  }}
-                />
-              ))}
-            </div>
-          )}
-          <Button
-            onClick={() => handleChange(param.name, param.initial)}
+              {(value ?? param.initial) ? 'Enabled' : 'Disabled'}
+            </label>
+          </div>
+        )}
+        
+        {/* Number input with buttons */}
+        {!Array.isArray(param.initial) && param.type === 'number' && !('options' in param) && (
+          <div>
+            <InputNumber
+              value={value ?? param.initial}
+              showButtons
+              onValueChange={(e) => handleChange(param.name, e.value)}
+              min={param.min}
+              max={param.max}
+              step={param.step}
+              style={{
+                width: '100%',
+                backgroundColor: '#0f0f0f',
+                border: '1px solid #222222',
+                color: '#ffffff'
+              }}
+              inputStyle={{
+                backgroundColor: '#0f0f0f',
+                border: 'none',
+                color: '#ffffff',
+                textAlign: 'center'
+              }}
+            />
+            
+            {/* Slider for numbers with min/max */}
+            {param.min !== undefined && param.max !== undefined && (
+              <Slider
+                value={value ?? param.initial}
+                min={param.min}
+                max={param.max}
+                step={param.step}
+                onChange={(e) => handleChange(param.name, e.value)}
+                style={{
+                  marginTop: '0.75rem',
+                  width: '100%'
+                }}
+              />
+            )}
+          </div>
+        )}
+        
+        {/* Text input for string */}
+        {param.type === 'string' && !param.options && (
+          <InputText
+            value={value ?? param.initial}
+            onChange={(e) => handleChange(param.name, e.target.value)}
             style={{
-              marginRight: '0',
-              visibility: value === undefined || (JSON.stringify(value) === JSON.stringify(param.initial)) ? 'hidden' : 'visible',
+              width: '100%',
+              backgroundColor: '#0f0f0f',
+              border: '1px solid #222222',
+              color: '#ffffff',
+              padding: '0.5rem'
             }}
-            tooltipOptions={{position: 'left'}}
-            icon='pi pi-refresh'
-            className='p-button-text'/>
-        </div>
+          />
+        )}
+        
+        {/* Array input */}
+        {Array.isArray(param.initial) && 'min' in param && (
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem'
+          }}>
+            {param.initial.map((_, index) => (
+              <InputNumber
+                key={index}
+                value={value?.[index] ?? (param.initial as any)[index]}
+                min={param.min}
+                max={param.max}
+                showButtons
+                step={param.step}
+                onValueChange={(e) => {
+                  const newArray = [...(value ?? param.initial)];
+                  newArray[index] = e.value;
+                  handleChange(param.name, newArray);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#0f0f0f',
+                  border: '1px solid #222222',
+                  color: '#ffffff'
+                }}
+                inputStyle={{
+                  backgroundColor: '#0f0f0f',
+                  border: 'none',
+                  color: '#ffffff',
+                  textAlign: 'center',
+                  fontSize: '0.85rem'
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
-      {!Array.isArray(param.initial) && param.type === 'number' && param.min !== undefined && (
-        <Slider
-          style={{
-            flex: 1,
-            minHeight: '5px',
-            margin: '5px 40px 5px 5px',
-          }}
-          value={value || param.initial}
-          min={param.min}
-          max={param.max}
-          step={param.step}
-          onChange={(e) => handleChange(param.name, e.value)}
-        />
-      )}
     </div>
   );
 }

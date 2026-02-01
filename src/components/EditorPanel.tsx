@@ -48,6 +48,9 @@ export default function EditorPanel({className, style}: {className?: string, sty
   }
 
   const onMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
+    // Set dark theme
+    monaco.editor.setTheme('vs-dark');
+    
     editor.addAction({
       id: "openscad-render",
       label: "Render OpenSCAD",
@@ -75,15 +78,16 @@ export default function EditorPanel({className, style}: {className?: string, sty
 
   return (
     <div className={`editor-panel ${className ?? ''}`} style={{
-      // maxWidth: '5 0vw',
       display: 'flex',
       flexDirection: 'column',
-      // position: 'relative',
-      // width: '100%', height: '100%',
+      backgroundColor: '#000000',
       ...(style ?? {})
     }}>
       <div className='flex flex-row gap-2' style={{
         margin: '5px',
+        padding: '0.5rem',
+        backgroundColor: '#0a0a0a',
+        borderBottom: '1px solid #222222'
       }}>
           
         <Menu model={[
@@ -144,7 +148,18 @@ export default function EditorPanel({className, style}: {className?: string, sty
             command: () => editor?.trigger(state.params.activePath, 'actions.find', null),
           },
         ] as MenuItem[]} popup ref={menu} />
-        <Button title="Editor menu" rounded text icon="pi pi-ellipsis-h" onClick={(e) => menu.current && menu.current.toggle(e)} />
+        <Button 
+          title="Editor menu" 
+          rounded 
+          text 
+          icon="pi pi-ellipsis-h" 
+          onClick={(e) => menu.current && menu.current.toggle(e)}
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#ffffff'
+          }}
+        />
         
         <FilePicker 
             style={{
@@ -152,10 +167,17 @@ export default function EditorPanel({className, style}: {className?: string, sty
             }}/>
 
         {state.params.activePath !== defaultSourcePath && 
-          <Button icon="pi pi-chevron-left" 
-          text
-          onClick={() => model.openFile(defaultSourcePath)} 
-          title={`Go back to ${defaultSourcePath}`}/>}
+          <Button 
+            icon="pi pi-chevron-left" 
+            text
+            onClick={() => model.openFile(defaultSourcePath)} 
+            title={`Go back to ${defaultSourcePath}`}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#ffffff'
+            }}
+          />}
 
       </div>
 
@@ -168,14 +190,23 @@ export default function EditorPanel({className, style}: {className?: string, sty
           <Editor
             className="openscad-editor absolute-fill"
             defaultLanguage="openscad"
+            theme="vs-dark"
             path={state.params.activePath}
             value={model.source}
             onChange={s => model.source = s ?? ''}
-            onMount={onMount} // TODO: This looks a bit silly, does it trigger a re-render??
+            onMount={onMount}
             options={{
               ...openscadEditorOptions,
-              fontSize: 16,
+              fontSize: 14,
               lineNumbers: state.view.lineNumbers ? 'on' : 'off',
+              minimap: { enabled: false },
+              scrollbar: {
+                vertical: 'visible',
+                horizontal: 'visible',
+                verticalScrollbarSize: 12,
+                horizontalScrollbarSize: 12,
+              },
+              padding: { top: 16, bottom: 16 },
             }}
           />
         )}
@@ -183,18 +214,37 @@ export default function EditorPanel({className, style}: {className?: string, sty
           <InputTextarea 
             className="openscad-editor absolute-fill"
             value={model.source}
-            onChange={s => model.source = s.target.value ?? ''}  
+            onChange={s => model.source = s.target.value ?? ''}
+            style={{
+              backgroundColor: '#1e1e1e',
+              color: '#d4d4d4',
+              border: 'none',
+              fontFamily: 'Consolas, Monaco, monospace',
+              fontSize: '14px',
+              padding: '16px'
+            }}
           />
         )}
       </div>
 
       <div style={{
         display: state.view.logs ? undefined : 'none',
-        overflowY: 'scroll',
+        overflowY: 'auto',
         height: 'calc(min(200px, 30vh))',
+        backgroundColor: '#0a0a0a',
+        borderTop: '1px solid #222222',
+        padding: '0.5rem'
       }}>
         {(state.currentRunLogs ?? []).map(([type, text], i) => (
-          <pre key={i}>{text}</pre>
+          <pre key={i} style={{
+            margin: 0,
+            padding: '0.25rem 0',
+            color: type === 'stderr' ? '#ff6b6b' : '#a0a0a0',
+            fontSize: '0.85rem',
+            fontFamily: 'Consolas, Monaco, monospace',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }}>{text}</pre>
         ))}
       </div>
     

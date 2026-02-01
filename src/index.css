@@ -1,14 +1,271 @@
+/* Pitch Black Dark Theme */
+:root {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #141414;
+  --bg-hover: #1a1a1a;
+  --border-color: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #666666;
+  --accent-color: #ffffff;
+  --button-bg: #1a1a1a;
+  --button-hover: #2a2a2a;
+  --button-active: #333333;
+  --input-bg: #0f0f0f;
+  --scrollbar-bg: #0a0a0a;
+  --scrollbar-thumb: #333333;
+  --scrollbar-thumb-hover: #444444;
+}
+
 body {
   margin: 0;
-  font-family: var(--font-family);
-  /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif; */
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+/* Override PrimeReact theme variables */
+.p-component {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Dark theme for all surfaces */
+.p-component,
+.p-inputtext,
+.p-button,
+.p-togglebutton,
+.p-tabmenu,
+.p-dialog,
+.p-panel {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Buttons - Monotone white style */
+.p-button {
+  background-color: var(--button-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.2s ease;
+}
+
+.p-button:hover {
+  background-color: var(--button-hover) !important;
+  border-color: var(--text-tertiary) !important;
+}
+
+.p-button:active,
+.p-button:focus {
+  background-color: var(--button-active) !important;
+  box-shadow: 0 0 0 2px var(--border-color) !important;
+}
+
+.p-button-icon {
+  color: var(--text-primary) !important;
+}
+
+/* Toggle buttons */
+.p-togglebutton {
+  background-color: var(--button-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+.p-togglebutton.p-highlight {
+  background-color: var(--text-primary) !important;
+  color: var(--bg-primary) !important;
+  border-color: var(--text-primary) !important;
+}
+
+.p-togglebutton:hover {
+  background-color: var(--button-hover) !important;
+}
+
+/* Input fields */
+.p-inputtext,
+.p-inputtextarea {
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-inputtext:focus,
+.p-inputtextarea:focus {
+  border-color: var(--text-tertiary) !important;
+  box-shadow: 0 0 0 1px var(--text-tertiary) !important;
+}
+
+.p-inputtext::placeholder,
+.p-inputtextarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background-color: var(--scrollbar-bg);
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 6px;
+  border: 2px solid var(--scrollbar-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background-color: var(--scrollbar-bg);
+}
+
+/* Tab menu */
+.p-tabmenu .p-tabmenu-nav {
+  background-color: var(--bg-secondary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.p-tabmenu .p-tabmenuitem {
+  background-color: transparent !important;
+}
+
+.p-tabmenu .p-tabmenuitem .p-menuitem-link {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+.p-tabmenu .p-tabmenuitem.p-highlight .p-menuitem-link {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--text-primary) !important;
+}
+
+.p-tabmenu .p-tabmenuitem:hover .p-menuitem-link {
+  background-color: var(--bg-hover) !important;
+}
+
+/* Progress spinner */
+.p-progress-spinner-circle {
+  stroke: var(--text-primary) !important;
+}
+
+/* Dialog */
+.p-dialog {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.p-dialog .p-dialog-header {
+  background-color: var(--bg-tertiary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-dialog .p-dialog-content {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Panel */
+.p-panel .p-panel-header {
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-panel .p-panel-content {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Links */
+a {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--text-secondary);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* Monaco Editor Dark Theme Customization */
+.monaco-editor,
+.monaco-editor .margin,
+.monaco-editor-background {
+  background-color: #000000 !important;
+}
+
+.monaco-editor .line-numbers {
+  color: #666666 !important;
+}
+
+.monaco-editor .current-line {
+  border-color: #1a1a1a !important;
+}
+
+.monaco-editor .selected-text {
+  background-color: #264f78 !important;
+}
+
+.monaco-editor .cursor {
+  background-color: #ffffff !important;
+}
+
+/* Monaco scrollbars */
+.monaco-scrollable-element > .scrollbar > .slider {
+  background: #333333 !important;
+}
+
+.monaco-scrollable-element > .scrollbar > .slider:hover {
+  background: #444444 !important;
+}
+
+/* Monaco find widget */
+.monaco-editor .find-widget {
+  background-color: #0a0a0a !important;
+  border: 1px solid #222222 !important;
+}
+
+/* Monaco suggest widget (autocomplete) */
+.monaco-editor .suggest-widget {
+  background-color: #0a0a0a !important;
+  border: 1px solid #222222 !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
+  background-color: #1a1a1a !important;
+}
+
+/* Remove default focus outlines and add custom ones */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 1px solid var(--text-tertiary);
+  outline-offset: 2px;
 }

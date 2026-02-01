@@ -47,7 +47,8 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
           flexDirection: 'column',
           height: '100vh',
           width: '100vw',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          backgroundColor: '#000000'
         }}>
           {/* Top Header */}
           <PanelSwitcher />
@@ -56,15 +57,16 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
           <div style={{
             display: 'flex',
             flex: 1,
-            overflow: 'hidden'
+            overflow: 'hidden',
+            backgroundColor: '#000000'
           }}>
             {/* Left Sidebar - Properties/Customizer */}
             <div style={{
               width: '300px',
-              borderRight: '1px solid var(--surface-border)',
+              borderRight: '1px solid #222222',
               display: 'flex',
               flexDirection: 'column',
-              backgroundColor: 'var(--surface-ground)'
+              backgroundColor: '#0a0a0a'
             }}>
               <CustomizerPanel 
                 className=""
@@ -77,13 +79,15 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              backgroundColor: '#000000'
             }}>
               {/* Top: 3D Preview */}
               <div style={{
                 height: '50%',
-                borderBottom: '1px solid var(--surface-border)',
-                display: 'flex'
+                borderBottom: '1px solid #222222',
+                display: 'flex',
+                backgroundColor: '#000000'
               }}>
                 <ViewerPanel 
                   className=""
@@ -94,7 +98,8 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               {/* Bottom: Code Editor */}
               <div style={{
                 height: '50%',
-                display: 'flex'
+                display: 'flex',
+                backgroundColor: '#000000'
               }}>
                 <EditorPanel 
                   className=""
@@ -107,10 +112,10 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
             {state.view.aiChatVisible && (
               <div style={{
                 width: '400px',
-                borderLeft: '1px solid var(--surface-border)',
+                borderLeft: '1px solid #222222',
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: 'var(--surface-ground)'
+                backgroundColor: '#0a0a0a'
               }}>
                 <AIChatPanel 
                   visible={true} 

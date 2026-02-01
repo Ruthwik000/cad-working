@@ -180,23 +180,23 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      backgroundColor: 'var(--surface-ground)'
+      backgroundColor: '#0a0a0a'
     }}>
       {/* Header */}
       <div style={{
-        padding: '1rem',
-        borderBottom: '1px solid var(--surface-border)',
+        padding: '1rem 1.5rem',
+        borderBottom: '1px solid #222222',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: 'var(--surface-card)'
+        backgroundColor: '#0a0a0a'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <i className="pi pi-sparkles" style={{ fontSize: '1.2rem', color: 'var(--primary-color)' }}></i>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <i className="pi pi-sparkles" style={{ fontSize: '1.2rem', color: '#ffffff' }}></i>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>AI Assistant</h3>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 500, color: '#ffffff' }}>AI Assistant</h3>
             {model?.source?.trim() && (
-              <small style={{ color: 'var(--text-color-secondary)', fontSize: '0.75rem' }}>
+              <small style={{ color: '#666666', fontSize: '0.75rem' }}>
                 Edit mode - I can modify your current model
               </small>
             )}
@@ -208,6 +208,11 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
           text
           severity="secondary"
           onClick={onClose}
+          style={{
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#ffffff'
+          }}
         />
       </div>
 
@@ -215,8 +220,8 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
       {showApiKeyInput && (
         <div style={{
           padding: '1rem',
-          backgroundColor: 'var(--yellow-50)',
-          borderBottom: '1px solid var(--surface-border)'
+          backgroundColor: '#141414',
+          borderBottom: '1px solid #222222'
         }}>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 500 }}>
             Gemini API Key
@@ -227,17 +232,28 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Enter your Gemini API key"
               rows={2}
-              style={{ flex: 1, fontSize: '0.85rem' }}
+              style={{ 
+                flex: 1, 
+                fontSize: '0.85rem',
+                backgroundColor: '#0f0f0f',
+                border: '1px solid #222222',
+                color: '#ffffff'
+              }}
             />
             <Button
               icon="pi pi-check"
               onClick={saveApiKey}
               disabled={!apiKey.trim()}
+              style={{
+                backgroundColor: '#1a1a1a',
+                border: '1px solid #333333',
+                color: '#ffffff'
+              }}
             />
           </div>
-          <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--text-color-secondary)' }}>
+          <small style={{ display: 'block', marginTop: '0.5rem', color: '#666666' }}>
             Get your API key from{' '}
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#ffffff' }}>
               Google AI Studio
             </a>
           </small>
@@ -251,19 +267,20 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
         padding: '1rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem'
+        gap: '1rem',
+        backgroundColor: '#000000'
       }}>
         {messages.length === 0 && (
           <div style={{
             textAlign: 'center',
-            color: 'var(--text-color-secondary)',
+            color: '#666666',
             padding: '2rem 1rem'
           }}>
-            <i className="pi pi-sparkles" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.3 }}></i>
-            <p style={{ margin: 0, fontSize: '0.95rem' }}>
+            <i className="pi pi-sparkles" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.2, color: '#ffffff' }}></i>
+            <p style={{ margin: 0, fontSize: '0.95rem', color: '#a0a0a0' }}>
               Ask me to generate or edit 3D models!
             </p>
-            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem' }}>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#666666' }}>
               Create: "Make a realistic car"<br />
               Edit: "Make the headlights round" or "Add a spare tire"
             </p>
@@ -281,23 +298,24 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
           >
             <div style={{
               maxWidth: '85%',
-              padding: '0.75rem',
+              padding: '0.75rem 1rem',
               borderRadius: '8px',
-              backgroundColor: msg.role === 'user' ? 'var(--primary-color)' : 'var(--surface-card)',
-              color: msg.role === 'user' ? 'white' : 'var(--text-color)',
+              backgroundColor: msg.role === 'user' ? '#ffffff' : '#141414',
+              color: msg.role === 'user' ? '#000000' : '#ffffff',
               fontSize: '0.9rem',
               wordBreak: 'break-word',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+              border: msg.role === 'user' ? 'none' : '1px solid #222222'
             }}>
               {msg.role === 'assistant' && msg.content.includes('Error:') ? (
-                <span style={{ color: 'var(--red-500)' }}>{msg.content}</span>
+                <span style={{ color: '#ff6b6b' }}>{msg.content}</span>
               ) : msg.role === 'assistant' ? (
                 <pre style={{
                   margin: 0,
-                  fontFamily: 'monospace',
+                  fontFamily: 'Consolas, Monaco, monospace',
                   fontSize: '0.8rem',
                   whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word'
+                  wordBreak: 'break-word',
+                  color: '#ffffff'
                 }}>
                   {msg.content}
                 </pre>
@@ -311,7 +329,7 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
         {loading && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <ProgressSpinner style={{ width: '30px', height: '30px' }} />
-            <span style={{ fontSize: '0.9rem', color: 'var(--text-color-secondary)' }}>
+            <span style={{ fontSize: '0.9rem', color: '#666666' }}>
               Generating code...
             </span>
           </div>
@@ -322,9 +340,9 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
 
       {/* Input */}
       <form onSubmit={handleSubmit} style={{
-        padding: '1rem',
-        borderTop: '1px solid var(--surface-border)',
-        backgroundColor: 'var(--surface-card)'
+        padding: '1rem 1.5rem',
+        borderTop: '1px solid #222222',
+        backgroundColor: '#0a0a0a'
       }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <InputTextarea
@@ -332,7 +350,13 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
             onChange={(e) => setInput(e.target.value)}
             placeholder={model?.source?.trim() ? "Ask me to modify the current model..." : "Describe what you want to create..."}
             rows={2}
-            style={{ flex: 1 }}
+            style={{ 
+              flex: 1,
+              backgroundColor: '#0f0f0f',
+              border: '1px solid #222222',
+              color: '#ffffff',
+              fontSize: '0.9rem'
+            }}
             disabled={loading}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -345,10 +369,15 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
             icon="pi pi-send"
             type="submit"
             disabled={!input.trim() || loading}
-            style={{ alignSelf: 'flex-end' }}
+            style={{ 
+              alignSelf: 'flex-end',
+              backgroundColor: '#ffffff',
+              border: 'none',
+              color: '#000000'
+            }}
           />
         </div>
-        <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--text-color-secondary)' }}>
+        <small style={{ display: 'block', marginTop: '0.5rem', color: '#666666', fontSize: '0.8rem' }}>
           Press Enter to send, Shift+Enter for new line
         </small>
       </form>

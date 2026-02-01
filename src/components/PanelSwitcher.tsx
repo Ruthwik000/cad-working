@@ -15,10 +15,10 @@ export default function PanelSwitcher() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0.5rem 1rem',
-      backgroundColor: 'var(--surface-card)',
-      borderBottom: '1px solid var(--surface-border)',
-      minHeight: '50px'
+      padding: '0.75rem 1.5rem',
+      backgroundColor: '#0a0a0a',
+      borderBottom: '1px solid #222222',
+      minHeight: '56px'
     }}>
       <div style={{
         display: 'flex',
@@ -27,8 +27,10 @@ export default function PanelSwitcher() {
       }}>
         <h2 style={{ 
           margin: 0, 
-          fontSize: '1.2rem',
-          fontWeight: 600 
+          fontSize: '1.1rem',
+          fontWeight: 400,
+          color: '#ffffff',
+          letterSpacing: '0.5px'
         }}>
           OpenSCAD Playground
         </h2>
@@ -46,6 +48,13 @@ export default function PanelSwitcher() {
           onIcon="pi pi-sparkles"
           offIcon="pi pi-sparkles"
           onChange={() => model.toggleAIChat()}
+          style={{
+            backgroundColor: state.view.aiChatVisible ? '#ffffff' : '#1a1a1a',
+            color: state.view.aiChatVisible ? '#000000' : '#ffffff',
+            border: '1px solid #333333',
+            padding: '0.5rem 1rem',
+            fontWeight: 500
+          }}
           />
       </div>
     </div>
