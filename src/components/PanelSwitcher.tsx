@@ -56,6 +56,19 @@ export default function PanelSwitcher() {
                   ({icon, label, command: () => model.changeSingleVisibility(id)}))} />
               </>
         }
+        
+        <ToggleButton
+          checked={state.view.aiChatVisible ?? false}
+          onLabel="AI"
+          offLabel="AI"
+          onIcon="pi pi-sparkles"
+          offIcon="pi pi-sparkles"
+          onChange={() => model.toggleAIChat()}
+          style={{
+            marginLeft: '5px',
+            marginRight: '5px',
+          }}
+          />
       </div>
     </div>
   );

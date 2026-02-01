@@ -118,6 +118,16 @@ export class Model {
     })
   }
 
+  toggleAIChat() {
+    this.mutate(s => {
+      s.view.aiChatVisible = !s.view.aiChatVisible;
+    });
+  }
+
+  setSource(newSource: string) {
+    this.source = newSource;
+  }
+
   openFile(path: string) {
     // console.log(`openFile: ${path}`);
     if (this.mutate(s => {

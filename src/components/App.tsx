@@ -10,6 +10,7 @@ import { ModelContext, FSContext } from './contexts';
 import PanelSwitcher from './PanelSwitcher';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import CustomizerPanel from './CustomizerPanel';
+import AIChatPanel from './AIChatPanel';
 
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
@@ -76,8 +77,14 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
   return (
     <ModelContext.Provider value={model}>
       <FSContext.Provider value={fs}>
+        <AIChatPanel 
+          visible={state.view.aiChatVisible ?? false} 
+          onClose={() => model.toggleAIChat()} 
+        />
         <div className='flex flex-column' style={{
             flex: 1,
+            marginLeft: state.view.aiChatVisible ? '400px' : '0',
+            transition: 'margin-left 0.3s ease'
           }}>
           
           <PanelSwitcher />
