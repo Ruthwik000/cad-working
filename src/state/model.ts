@@ -124,6 +124,18 @@ export class Model {
     });
   }
 
+  toggleSketcher() {
+    this.mutate(s => {
+      s.view.sketcherVisible = !s.view.sketcherVisible;
+    });
+  }
+
+  toggleCodeEditor() {
+    this.mutate(s => {
+      s.view.codeEditorVisible = !s.view.codeEditorVisible;
+    });
+  }
+
   toggleCodeEditor() {
     this.mutate(s => {
       s.view.codeEditorVisible = !s.view.codeEditorVisible;

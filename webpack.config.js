@@ -1,12 +1,16 @@
 import CopyPlugin from 'copy-webpack-plugin';
 import webpack from 'webpack';
 import WorkboxPlugin from 'workbox-webpack-plugin';
+import dotenv from 'dotenv';
 
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Load environment variables from .env file
+dotenv.config();
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -69,7 +73,10 @@ const config = [
     },
     plugins: [
       new webpack.EnvironmentPlugin({
-        'process.env.NODE_ENV': 'development',
+        'NODE_ENV': process.env.NODE_ENV || 'development',
+        'REACT_APP_GROQ_API_KEY': process.env.REACT_APP_GROQ_API_KEY || '',
+        'REACT_APP_SKETCHER_API_KEY': process.env.REACT_APP_SKETCHER_API_KEY || '',
+        'REACT_APP_GEMINI_API_KEY': process.env.REACT_APP_GEMINI_API_KEY || '',
       }),
       ...(process.env.NODE_ENV === 'production' ? [
         new WorkboxPlugin.GenerateSW({
@@ -180,7 +187,10 @@ const config = [
     },
     plugins: [
       new webpack.EnvironmentPlugin({
-        'process.env.NODE_ENV': 'development',
+        'NODE_ENV': process.env.NODE_ENV || 'development',
+        'REACT_APP_GROQ_API_KEY': process.env.REACT_APP_GROQ_API_KEY || '',
+        'REACT_APP_SKETCHER_API_KEY': process.env.REACT_APP_SKETCHER_API_KEY || '',
+        'REACT_APP_GEMINI_API_KEY': process.env.REACT_APP_GEMINI_API_KEY || '',
       }),
     ],
   },
