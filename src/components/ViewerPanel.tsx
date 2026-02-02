@@ -173,7 +173,7 @@ export default function ViewerPanel({className, style}: {className?: string, sty
     };
   });
 
-  // Click on model parts to select and highlight
+  // Click on model parts to select and show parameter
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (e.target === modelViewerRef.current && state.parameterSet?.parameters?.length) {
@@ -186,8 +186,7 @@ export default function ViewerPanel({className, style}: {className?: string, sty
         const hit = viewer.positionAndNormalFromPoint(x, y);
         
         if (hit) {
-          // For now, we'll cycle through parameters on each click
-          // In a real implementation, you'd map the hit to specific parts
+          // Cycle through parameters on each click
           const params = state.parameterSet.parameters;
           const currentIndex = selectedPart ? params.findIndex(p => p.name === selectedPart) : -1;
           const nextIndex = (currentIndex + 1) % params.length;
@@ -195,14 +194,6 @@ export default function ViewerPanel({className, style}: {className?: string, sty
           
           setSelectedPart(nextParam.name);
           setSelectedPartPosition({x: e.clientX, y: e.clientY});
-          
-          // Apply gray material to the model (visual feedback)
-          if (viewer.model) {
-            const materials = viewer.model.materials;
-            materials.forEach((material: any) => {
-              material.pbrMetallicRoughness.setBaseColorFactor([0.5, 0.5, 0.5, 1]);
-            });
-          }
         }
       }
     };
@@ -210,13 +201,6 @@ export default function ViewerPanel({className, style}: {className?: string, sty
     const handleClickOutside = (e: MouseEvent) => {
       if (e.target !== modelViewerRef.current && selectedPart) {
         setSelectedPart(null);
-        // Reset material colors
-        if (modelViewerRef.current?.model) {
-          const materials = modelViewerRef.current.model.materials;
-          materials.forEach((material: any) => {
-            material.pbrMetallicRoughness.setBaseColorFactor([1, 1, 1, 1]);
-          });
-        }
       }
     };
 
