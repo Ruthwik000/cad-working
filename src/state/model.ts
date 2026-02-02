@@ -124,6 +124,12 @@ export class Model {
     });
   }
 
+  toggleCodeEditor() {
+    this.mutate(s => {
+      s.view.codeEditorVisible = !s.view.codeEditorVisible;
+    });
+  }
+
   setSource(newSource: string) {
     this.source = newSource;
   }

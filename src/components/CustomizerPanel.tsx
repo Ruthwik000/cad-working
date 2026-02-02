@@ -205,6 +205,7 @@ function ParameterInput({param, value, className, style, handleChange}: {param: 
             icon='pi pi-refresh'
             text
             rounded
+            title="Reset to default"
             style={{
               width: '28px',
               height: '28px',
@@ -213,8 +214,6 @@ function ParameterInput({param, value, className, style, handleChange}: {param: 
               border: 'none',
               color: '#666666'
             }}
-            tooltip="Reset to default"
-            tooltipOptions={{position: 'left'}}
           />
         )}
       </div>
