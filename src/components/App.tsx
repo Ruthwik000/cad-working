@@ -11,7 +11,6 @@ import PanelSwitcher from './PanelSwitcher';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import CustomizerPanel from './CustomizerPanel';
 import AIChatPanel from './AIChatPanel';
-import SketcherPanel from './SketcherPanel';
 
 
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
@@ -19,7 +18,6 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
   const [leftWidth, setLeftWidth] = useState(300);
   const [rightChatWidth, setRightChatWidth] = useState(400);
   const [rightEditorWidth, setRightEditorWidth] = useState(500);
-  const [rightSketcherWidth, setRightSketcherWidth] = useState(450);
   const [viewerHeight, setViewerHeight] = useState(50); // percentage
   
   const model = new Model(fs, state, setState, statePersister);
@@ -102,30 +100,6 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
       const delta = startX - e.clientX;
       const newWidth = Math.max(300, Math.min(1000, startWidth + delta));
       setRightEditorWidth(newWidth);
-    };
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  };
-
-  const handleRightSketcherResize = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startWidth = rightSketcherWidth;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const delta = startX - e.clientX;
-      const newWidth = Math.max(300, Math.min(1000, startWidth + delta));
-      setRightSketcherWidth(newWidth);
     };
 
     const handleMouseUp = () => {
@@ -313,38 +287,6 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               </div>
             )}
 
-            {/* Right Sidebar - Sketcher */}
-            {state.view.sketcherVisible && (
-              <div style={{
-                width: `${rightSketcherWidth}px`,
-                borderLeft: '1px solid #222222',
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: '#0a0a0a',
-                position: 'relative'
-              }}>
-                {/* Right Resize Handle */}
-                <div
-                  onMouseDown={handleRightSketcherResize}
-                  style={{
-                    position: 'absolute',
-                    left: -4,
-                    top: 0,
-                    bottom: 0,
-                    width: '8px',
-                    cursor: 'col-resize',
-                    zIndex: 10,
-                    backgroundColor: 'transparent'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffffff20'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                />
-                <SketcherPanel 
-                  visible={true} 
-                  onClose={() => model.toggleSketcher()} 
-                />
-              </div>
-            )}
           </div>
 
           {/* Bottom Footer */}

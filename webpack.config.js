@@ -75,7 +75,6 @@ const config = [
       new webpack.EnvironmentPlugin({
         'NODE_ENV': process.env.NODE_ENV || 'development',
         'REACT_APP_GROQ_API_KEY': process.env.REACT_APP_GROQ_API_KEY || '',
-        'REACT_APP_SKETCHER_API_KEY': process.env.REACT_APP_SKETCHER_API_KEY || '',
         'REACT_APP_GEMINI_API_KEY': process.env.REACT_APP_GEMINI_API_KEY || '',
       }),
       ...(process.env.NODE_ENV === 'production' ? [
@@ -122,11 +121,6 @@ const config = [
           {
             from: path.resolve(__dirname, 'src/wasm/openscad.wasm'),
             to: path.resolve(__dirname, 'dist'),
-          },
-          {
-            from: path.resolve(__dirname, 'node_modules/@mediapipe/hands'),
-            to: path.resolve(__dirname, 'dist/mediapipe/hands'),
-            toType: 'dir',
           },
         ],
       }),
@@ -194,7 +188,6 @@ const config = [
       new webpack.EnvironmentPlugin({
         'NODE_ENV': process.env.NODE_ENV || 'development',
         'REACT_APP_GROQ_API_KEY': process.env.REACT_APP_GROQ_API_KEY || '',
-        'REACT_APP_SKETCHER_API_KEY': process.env.REACT_APP_SKETCHER_API_KEY || '',
         'REACT_APP_GEMINI_API_KEY': process.env.REACT_APP_GEMINI_API_KEY || '',
       }),
     ],
