@@ -7,7 +7,6 @@ import { Button } from 'primereact/button';
 import { ProgressBar } from 'primereact/progressbar';
 import { Badge } from 'primereact/badge';
 import { Toast } from 'primereact/toast';
-import HelpMenu from './HelpMenu.tsx';
 import ExportButton from './ExportButton.tsx';
 import SettingsMenu from './SettingsMenu.tsx';
 import MultimaterialColorsDialog from './MultimaterialColorsDialog.tsx';
@@ -98,12 +97,6 @@ export default function Footer({style}: {style?: CSSProperties}) {
       <div style={{flex: 1}}></div>
 
       <SettingsMenu />
-
-      <HelpMenu style={{
-          position: 'absolute',
-          right: 0,
-          top: '4px',
-        }} />
 
       <Toast ref={toast} />
     </div>
