@@ -116,6 +116,11 @@ const config = [
             from: path.resolve(__dirname, 'src/wasm/openscad.wasm'),
             to: path.resolve(__dirname, 'dist'),
           },
+          {
+            from: path.resolve(__dirname, 'node_modules/@mediapipe/hands'),
+            to: path.resolve(__dirname, 'dist/mediapipe/hands'),
+            toType: 'dir',
+          },
         ],
       }),
     ],

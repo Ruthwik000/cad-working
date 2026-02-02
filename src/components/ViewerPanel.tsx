@@ -5,6 +5,7 @@ import { ModelContext } from './contexts.ts';
 import { Toast } from 'primereact/toast';
 import { blurHashToImage, imageToBlurhash, imageToThumbhash, thumbHashToImage } from '../io/image_hashes.ts';
 import { Parameter } from '../state/customizer-types.ts';
+import CVControlPanel, { GestureData } from './CVControlPanel.tsx';
 
 declare global {
   namespace JSX {
@@ -67,6 +68,7 @@ export default function ViewerPanel({className, style}: {className?: string, sty
   
   const [selectedPart, setSelectedPart] = useState<string | null>(null);
   const [selectedPartPosition, setSelectedPartPosition] = useState({x: 0, y: 0});
+  const [grabbedObject, setGrabbedObject] = useState(false);
 
   const modelUri = state.output?.displayFileURL ?? state.output?.outFileURL ?? '';
   const loaded = loadedUri === modelUri;
@@ -212,6 +214,114 @@ export default function ViewerPanel({className, style}: {className?: string, sty
       window.removeEventListener('click', handleClickOutside);
     };
   }, [modelViewerRef.current, selectedPart, state.parameterSet]);
+
+  // Handle CV gestures
+  const handleGesture = useCallback((gesture: GestureData) => {
+    console.log('ViewerPanel received gesture:', gesture.type, gesture);
+    
+    if (!modelViewerRef.current) {
+      console.log('No modelViewerRef');
+      return;
+    }
+
+    const viewer = modelViewerRef.current;
+    const orbit = viewer.getCameraOrbit();
+    console.log('Current orbit:', orbit.toString());
+
+    switch (gesture.type) {
+      case 'point':
+        // Move cursor/highlight objects
+        if (gesture.position) {
+          // Could implement hover effects here
+        }
+        break;
+
+      case 'grab':
+        setGrabbedObject(true);
+        toastRef.current?.show({severity: 'success', detail: 'Object grabbed', life: 500});
+        break;
+
+      case 'drag':
+        console.log('Processing DRAG with delta:', gesture.delta);
+        if (gesture.delta) {
+          // Rotate the model based on hand movement (works without grab state)
+          const newTheta = orbit.theta + gesture.delta.x * 10;
+          const newPhi = Math.max(0, Math.min(Math.PI, orbit.phi - gesture.delta.y * 10));
+          
+          console.log('Setting orbit from', orbit.theta, orbit.phi, 'to', newTheta, newPhi);
+          
+          orbit.theta = newTheta;
+          orbit.phi = newPhi;
+          viewer.cameraOrbit = orbit.toString();
+          
+          console.log('New orbit set:', viewer.getCameraOrbit().toString());
+          
+          if (axesViewerRef.current) {
+            axesViewerRef.current.cameraOrbit = orbit.toString();
+          }
+        }
+        break;
+
+      case 'drop':
+        setGrabbedObject(false);
+        toastRef.current?.show({severity: 'info', detail: 'Object released', life: 500});
+        break;
+
+      case 'orbit':
+        if (gesture.delta) {
+          // Orbit camera around the model
+          orbit.theta += gesture.delta.x * 5;
+          orbit.phi -= gesture.delta.y * 5;
+          orbit.phi = Math.max(0, Math.min(Math.PI, orbit.phi));
+          viewer.cameraOrbit = orbit.toString();
+          if (axesViewerRef.current) {
+            axesViewerRef.current.cameraOrbit = orbit.toString();
+          }
+        }
+        break;
+
+      case 'pan':
+        if (gesture.delta) {
+          // Pan the camera
+          const target = viewer.getCameraTarget();
+          target.x -= gesture.delta.x * 3;
+          target.y += gesture.delta.y * 3;
+          viewer.cameraTarget = `${target.x}m ${target.y}m ${target.z}m`;
+        }
+        break;
+
+      case 'zoom':
+        console.log('Processing ZOOM with distance:', gesture.distance);
+        if (gesture.distance !== undefined && gesture.distance !== 0) {
+          // Zoom in/out based on pinch distance change
+          const currentRadius = orbit.radius;
+          // Increased sensitivity from 5 to 20
+          const newRadius = Math.max(0.1, Math.min(10, currentRadius - gesture.distance * 20));
+          
+          console.log('Zooming from radius', currentRadius, 'to', newRadius, 'delta:', gesture.distance);
+          
+          orbit.radius = newRadius;
+          viewer.cameraOrbit = orbit.toString();
+          
+          console.log('Applied zoom, new orbit:', viewer.getCameraOrbit().toString());
+          
+          if (axesViewerRef.current) {
+            const axesOrbit = axesViewerRef.current.getCameraOrbit();
+            axesOrbit.radius = newRadius;
+            axesViewerRef.current.cameraOrbit = axesOrbit.toString();
+          }
+        } else {
+          console.log('Zoom skipped - distance is', gesture.distance);
+        }
+        break;
+
+      case 'idle':
+        if (grabbedObject) {
+          setGrabbedObject(false);
+        }
+        break;
+    }
+  }, [modelViewerRef.current, axesViewerRef.current, grabbedObject, toastRef]);
 
   return (
     <div className={className}
@@ -384,6 +494,12 @@ export default function ViewerPanel({className, style}: {className?: string, sty
           })()}
         </div>
       )}
+
+      {/* CV Control Panel */}
+      <CVControlPanel 
+        visible={state.view.cvControlVisible ?? false}
+        onGesture={handleGesture}
+      />
     </div>
   )
 }

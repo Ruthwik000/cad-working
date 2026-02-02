@@ -71,6 +71,19 @@ export default function PanelSwitcher() {
             fontWeight: 500
           }}
           />
+        <ToggleButton
+          checked={state.view.cvControlVisible ?? false}
+          onLabel="🤚 CV Control"
+          offLabel="🤚 CV Control"
+          onChange={() => model.toggleCVControl()}
+          style={{
+            backgroundColor: state.view.cvControlVisible ? '#4CAF50' : '#1a1a1a',
+            color: '#ffffff',
+            border: state.view.cvControlVisible ? '2px solid #4CAF50' : '1px solid #333333',
+            padding: '0.5rem 1rem',
+            fontWeight: 600
+          }}
+          />
       </div>
     </div>
   );

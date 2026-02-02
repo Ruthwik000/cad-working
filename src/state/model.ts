@@ -130,6 +130,12 @@ export class Model {
     });
   }
 
+  toggleCVControl() {
+    this.mutate(s => {
+      s.view.cvControlVisible = !s.view.cvControlVisible;
+    });
+  }
+
   setSource(newSource: string) {
     this.source = newSource;
   }
