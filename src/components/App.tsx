@@ -16,7 +16,8 @@ import AIChatPanel from './AIChatPanel';
 export function App({initialState, statePersister, fs}: {initialState: State, statePersister: StatePersister, fs: FS}) {
   const [state, setState] = useState(initialState);
   const [leftWidth, setLeftWidth] = useState(300);
-  const [rightWidth, setRightWidth] = useState(400);
+  const [rightChatWidth, setRightChatWidth] = useState(400);
+  const [rightEditorWidth, setRightEditorWidth] = useState(500);
   const [viewerHeight, setViewerHeight] = useState(50); // percentage
   
   const model = new Model(fs, state, setState, statePersister);
@@ -66,15 +67,39 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
     document.body.style.userSelect = 'none';
   };
 
-  const handleRightResize = (e: React.MouseEvent) => {
+  const handleRightChatResize = (e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
-    const startWidth = rightWidth;
+    const startWidth = rightChatWidth;
 
     const handleMouseMove = (e: MouseEvent) => {
       const delta = startX - e.clientX;
       const newWidth = Math.max(300, Math.min(800, startWidth + delta));
-      setRightWidth(newWidth);
+      setRightChatWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleRightEditorResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = rightEditorWidth;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const delta = startX - e.clientX;
+      const newWidth = Math.max(300, Math.min(1000, startWidth + delta));
+      setRightEditorWidth(newWidth);
     };
 
     const handleMouseUp = () => {
@@ -173,7 +198,7 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               />
             </div>
 
-            {/* Center Area - Editor + Viewer */}
+            {/* Center Area - Viewer Only */}
             <div style={{
               flex: 1,
               display: 'flex',
@@ -182,10 +207,9 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               backgroundColor: '#000000',
               position: 'relative'
             }}>
-              {/* Top: 3D Preview */}
+              {/* Full Height: 3D Preview */}
               <div style={{
-                height: `${viewerHeight}%`,
-                borderBottom: '1px solid #222222',
+                height: '100%',
                 display: 'flex',
                 backgroundColor: '#000000',
                 position: 'relative'
@@ -194,41 +218,13 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
                   className=""
                   style={{ flex: 1, display: 'flex' }} 
                 />
-                {/* Horizontal Resize Handle */}
-                <div
-                  onMouseDown={handleViewerResize}
-                  style={{
-                    position: 'absolute',
-                    bottom: -4,
-                    left: 0,
-                    right: 0,
-                    height: '8px',
-                    cursor: 'row-resize',
-                    zIndex: 10,
-                    backgroundColor: 'transparent'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffffff20'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                />
-              </div>
-
-              {/* Bottom: Code Editor */}
-              <div style={{
-                height: `${100 - viewerHeight}%`,
-                display: 'flex',
-                backgroundColor: '#000000'
-              }}>
-                <EditorPanel 
-                  className=""
-                  style={{ flex: 1, display: 'flex' }} 
-                />
               </div>
             </div>
 
-            {/* Right Sidebar - AI Chat */}
-            {state.view.aiChatVisible && (
+            {/* Right Sidebar - Code Editor */}
+            {state.view.codeEditorVisible && (
               <div style={{
-                width: `${rightWidth}px`,
+                width: `${rightEditorWidth}px`,
                 borderLeft: '1px solid #222222',
                 display: 'flex',
                 flexDirection: 'column',
@@ -237,7 +233,40 @@ export function App({initialState, statePersister, fs}: {initialState: State, st
               }}>
                 {/* Right Resize Handle */}
                 <div
-                  onMouseDown={handleRightResize}
+                  onMouseDown={handleRightEditorResize}
+                  style={{
+                    position: 'absolute',
+                    left: -4,
+                    top: 0,
+                    bottom: 0,
+                    width: '8px',
+                    cursor: 'col-resize',
+                    zIndex: 10,
+                    backgroundColor: 'transparent'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ffffff20'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                />
+                <EditorPanel 
+                  className=""
+                  style={{ flex: 1, display: 'flex' }} 
+                />
+              </div>
+            )}
+
+            {/* Right Sidebar - AI Chat */}
+            {state.view.aiChatVisible && (
+              <div style={{
+                width: `${rightChatWidth}px`,
+                borderLeft: '1px solid #222222',
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: '#0a0a0a',
+                position: 'relative'
+              }}>
+                {/* Right Resize Handle */}
+                <div
+                  onMouseDown={handleRightChatResize}
                   style={{
                     position: 'absolute',
                     left: -4,

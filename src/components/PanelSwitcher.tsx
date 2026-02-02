@@ -42,6 +42,21 @@ export default function PanelSwitcher() {
         alignItems: 'center'
       }}>
         <ToggleButton
+          checked={state.view.codeEditorVisible ?? false}
+          onLabel="Code"
+          offLabel="Code"
+          onIcon="pi pi-code"
+          offIcon="pi pi-code"
+          onChange={() => model.toggleCodeEditor()}
+          style={{
+            backgroundColor: state.view.codeEditorVisible ? '#ffffff' : '#1a1a1a',
+            color: state.view.codeEditorVisible ? '#000000' : '#ffffff',
+            border: '1px solid #333333',
+            padding: '0.5rem 1rem',
+            fontWeight: 500
+          }}
+          />
+        <ToggleButton
           checked={state.view.aiChatVisible ?? false}
           onLabel="AI Assistant"
           offLabel="AI Assistant"

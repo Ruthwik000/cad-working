@@ -48,6 +48,7 @@ export function createInitialState(state: State | null, source?: {content?: stri
         } as any,
 
         color: defaultModelColor,
+        codeEditorVisible: true,
       },
       preview: blurhash ? {blurhash} : undefined,
     };

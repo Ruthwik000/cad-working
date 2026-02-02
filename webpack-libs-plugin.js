@@ -193,15 +193,17 @@ class OpenSCADLibrariesPlugin {
             await fs.unlink(wasmTarget);
         } catch { /* ignore */ }
 
-        // Create new symlinks
-        await fs.symlink(path.relative('public', path.join(wasmDir, 'openscad.js')), jsTarget);
-        await fs.symlink(path.relative('public', path.join(wasmDir, 'openscad.wasm')), wasmTarget);
+        // Copy files instead of symlinks (Windows compatibility)
+        await fs.copyFile(path.join(wasmDir, 'openscad.js'), jsTarget);
+        await fs.copyFile(path.join(wasmDir, 'openscad.wasm'), wasmTarget);
 
-        // Create src/wasm symlink
+        // Create src/wasm directory and copy files
         try {
-            await fs.unlink(this.srcWasmDir);
+            await fs.rm(this.srcWasmDir, { recursive: true, force: true });
         } catch { /* ignore */ }
-        await fs.symlink(path.relative('src', wasmDir), this.srcWasmDir);
+        await this.ensureDir(this.srcWasmDir);
+        await fs.copyFile(path.join(wasmDir, 'openscad.js'), path.join(this.srcWasmDir, 'openscad.js'));
+        await fs.copyFile(path.join(wasmDir, 'openscad.wasm'), path.join(this.srcWasmDir, 'openscad.wasm'));
 
         console.log('WASM setup completed');
     }

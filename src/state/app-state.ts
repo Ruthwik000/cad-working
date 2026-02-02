@@ -45,6 +45,7 @@ export interface State {
     logs?: boolean,
     extruderPickerVisibility?: 'editing' | 'exporting',
     aiChatVisible?: boolean,
+    codeEditorVisible?: boolean,
     layout: {
       mode: 'single',
       focus: SingleLayoutComponentId,
