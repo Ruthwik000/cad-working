@@ -65,8 +65,8 @@ export default function ViewerPanel({className, style}: {className?: string, sty
 
   const [cachedImageHash, setCachedImageHash] = useState<{hash: string, uri: string} | undefined>(undefined);
   
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({x: 0, y: 0});
+  const [selectedPart, setSelectedPart] = useState<string | null>(null);
+  const [selectedPartPosition, setSelectedPartPosition] = useState({x: 0, y: 0});
 
   const modelUri = state.output?.displayFileURL ?? state.output?.outFileURL ?? '';
   const loaded = loadedUri === modelUri;
@@ -173,33 +173,45 @@ export default function ViewerPanel({className, style}: {className?: string, sty
     };
   });
 
-  // Hover tooltip for showing parameters
+  // Click on model parts to select and show parameter
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
       if (e.target === modelViewerRef.current && state.parameterSet?.parameters?.length) {
-        setTooltipVisible(true);
-        setTooltipPosition({x: e.clientX, y: e.clientY});
-      } else if (tooltipVisible) {
-        setTooltipVisible(false);
+        const viewer = modelViewerRef.current;
+        const rect = viewer.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Get the 3D hit point
+        const hit = viewer.positionAndNormalFromPoint(x, y);
+        
+        if (hit) {
+          // Cycle through parameters on each click
+          const params = state.parameterSet.parameters;
+          const currentIndex = selectedPart ? params.findIndex(p => p.name === selectedPart) : -1;
+          const nextIndex = (currentIndex + 1) % params.length;
+          const nextParam = params[nextIndex];
+          
+          setSelectedPart(nextParam.name);
+          setSelectedPartPosition({x: e.clientX, y: e.clientY});
+        }
       }
     };
 
-    const handleMouseLeave = () => {
-      setTooltipVisible(false);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (e.target !== modelViewerRef.current && selectedPart) {
+        setSelectedPart(null);
+      }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    if (modelViewerRef.current) {
-      modelViewerRef.current.addEventListener('mouseleave', handleMouseLeave);
-    }
+    window.addEventListener('click', handleClick);
+    window.addEventListener('click', handleClickOutside);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (modelViewerRef.current) {
-        modelViewerRef.current.removeEventListener('mouseleave', handleMouseLeave);
-      }
+      window.removeEventListener('click', handleClick);
+      window.removeEventListener('click', handleClickOutside);
     };
-  }, [modelViewerRef.current, tooltipVisible, state.parameterSet]);
+  }, [modelViewerRef.current, selectedPart, state.parameterSet]);
 
   return (
     <div className={className}
@@ -286,77 +298,90 @@ export default function ViewerPanel({className, style}: {className?: string, sty
         </model-viewer>
       )}
 
-      {/* Hover Tooltip */}
-      {tooltipVisible && state.parameterSet?.parameters && state.parameterSet.parameters.length > 0 && (
+      {/* Selected Part Parameter Display */}
+      {selectedPart && state.parameterSet?.parameters && (
         <div
           style={{
             position: 'fixed',
-            left: `${tooltipPosition.x + 15}px`,
-            top: `${tooltipPosition.y + 15}px`,
+            left: `${selectedPartPosition.x + 15}px`,
+            top: `${selectedPartPosition.y + 15}px`,
             backgroundColor: 'rgba(10, 10, 10, 0.95)',
-            border: '1px solid #333',
-            borderRadius: '6px',
-            padding: '12px',
-            maxWidth: '350px',
-            maxHeight: '400px',
-            overflowY: 'auto',
+            border: '2px solid #4CAF50',
+            borderRadius: '8px',
+            padding: '16px',
+            minWidth: '250px',
             zIndex: 1000,
-            pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-            fontSize: '0.85rem',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
+            fontSize: '0.9rem',
             color: '#ffffff'
           }}
         >
-          <div style={{
-            fontWeight: 600,
-            marginBottom: '8px',
-            color: '#4CAF50',
-            fontSize: '0.9rem'
-          }}>
-            Available Parameters
-          </div>
-          {state.parameterSet.parameters.map((param: Parameter, idx: number) => (
-            <div
-              key={idx}
-              style={{
-                marginBottom: '8px',
-                paddingBottom: '8px',
-                borderBottom: idx < state.parameterSet!.parameters.length - 1 ? '1px solid #222' : 'none'
-              }}
-            >
-              <div style={{
-                fontWeight: 500,
-                color: '#ffffff',
-                marginBottom: '2px'
-              }}>
-                {param.name}
-              </div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#888',
-                marginBottom: '4px'
-              }}>
-                Type: {param.type}
-                {param.type === 'number' && 'min' in param && param.min !== undefined && ` • Range: ${param.min} - ${param.max}`}
-              </div>
-              {param.caption && (
+          {(() => {
+            const param = state.parameterSet.parameters.find(p => p.name === selectedPart);
+            if (!param) return null;
+            
+            return (
+              <>
+                <div style={{
+                  fontWeight: 600,
+                  marginBottom: '12px',
+                  color: '#4CAF50',
+                  fontSize: '1rem',
+                  borderBottom: '1px solid #4CAF50',
+                  paddingBottom: '8px'
+                }}>
+                  Selected Parameter
+                </div>
+                <div style={{
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  marginBottom: '8px',
+                  fontSize: '1.1rem'
+                }}>
+                  {param.name}
+                </div>
+                <div style={{
+                  fontSize: '0.85rem',
+                  color: '#aaa',
+                  marginBottom: '8px'
+                }}>
+                  <strong>Type:</strong> {param.type}
+                  {param.type === 'number' && 'min' in param && param.min !== undefined && (
+                    <span> • <strong>Range:</strong> {param.min} - {param.max}</span>
+                  )}
+                </div>
+                {param.caption && (
+                  <div style={{
+                    fontSize: '0.85rem',
+                    color: '#bbb',
+                    fontStyle: 'italic',
+                    marginBottom: '8px',
+                    padding: '8px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '4px'
+                  }}>
+                    {param.caption}
+                  </div>
+                )}
+                <div style={{
+                  fontSize: '0.85rem',
+                  color: '#888',
+                  marginTop: '8px'
+                }}>
+                  <strong>Default:</strong> {JSON.stringify(param.initial)}
+                </div>
                 <div style={{
                   fontSize: '0.75rem',
-                  color: '#aaa',
-                  fontStyle: 'italic'
+                  color: '#666',
+                  marginTop: '12px',
+                  fontStyle: 'italic',
+                  textAlign: 'center'
                 }}>
-                  {param.caption}
+                  Click again to cycle through parameters
                 </div>
-              )}
-              <div style={{
-                fontSize: '0.75rem',
-                color: '#666',
-                marginTop: '2px'
-              }}>
-                Default: {JSON.stringify(param.initial)}
-              </div>
-            </div>
-          ))}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

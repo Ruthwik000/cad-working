@@ -81,8 +81,7 @@ export default function CustomizerPanel({className, style}: {className?: string,
           loading={state.checkingSyntax}
           rounded
           text
-          tooltip="Refresh parameters"
-          tooltipOptions={{position: 'left'}}
+          title="Refresh parameters"
           style={{
             width: '32px',
             height: '32px',

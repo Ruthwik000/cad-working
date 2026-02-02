@@ -19,6 +19,7 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.min.css";
+import { PrimeReactProvider } from 'primereact/api';
 
 const log = debug('app:log');
 
@@ -96,7 +97,12 @@ window.addEventListener('load', async () => {
   );
   root.render(
     <React.StrictMode>
-      <App initialState={initialState} statePersister={statePersister} fs={fs} />
+      <PrimeReactProvider value={{ 
+        ripple: false,
+        hideOverlaysOnDocumentScrolling: false
+      }}>
+        <App initialState={initialState} statePersister={statePersister} fs={fs} />
+      </PrimeReactProvider>
     </React.StrictMode>
   );
 });
