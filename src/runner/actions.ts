@@ -70,7 +70,7 @@ export const checkSyntax =
     });
   });
 
-var renderDelay = 1000;
+var renderDelay = 300;
 export type RenderOutput = {
   outFile: File,
   logText: string,

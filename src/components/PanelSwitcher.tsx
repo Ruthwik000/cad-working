@@ -71,34 +71,6 @@ export default function PanelSwitcher() {
             fontWeight: 500
           }}
           />
-        <ToggleButton
-          checked={state.view.sketcherVisible ?? false}
-          onLabel="Sketcher"
-          offLabel="Sketcher"
-          onIcon="pi pi-pencil"
-          offIcon="pi pi-pencil"
-          onChange={() => model.toggleSketcher()}
-          style={{
-            backgroundColor: state.view.sketcherVisible ? '#ffffff' : '#1a1a1a',
-            color: state.view.sketcherVisible ? '#000000' : '#ffffff',
-            border: '1px solid #333333',
-            padding: '0.5rem 1rem',
-            fontWeight: 500
-          }}
-          />
-        <ToggleButton
-          checked={state.view.cvControlVisible ?? false}
-          onLabel="🤚 CV Control"
-          offLabel="🤚 CV Control"
-          onChange={() => model.toggleCVControl()}
-          style={{
-            backgroundColor: state.view.cvControlVisible ? '#4CAF50' : '#1a1a1a',
-            color: '#ffffff',
-            border: state.view.cvControlVisible ? '2px solid #4CAF50' : '1px solid #333333',
-            padding: '0.5rem 1rem',
-            fontWeight: 600
-          }}
-          />
       </div>
     </div>
   );
