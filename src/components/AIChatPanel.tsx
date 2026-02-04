@@ -98,6 +98,15 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
         if (session.modelCode && model) {
           model.setSource(session.modelCode);
           
+          // First check syntax to extract parameters
+          console.log('Checking syntax to extract parameters from loaded session...');
+          try {
+            await model.checkSyntax();
+            console.log('Syntax check completed - parameters extracted');
+          } catch (error) {
+            console.error('Syntax check failed:', error);
+          }
+          
           // Trigger render after code is loaded with retry logic
           const attemptRender = async (retries = 3) => {
             for (let i = 0; i < retries; i++) {
@@ -133,9 +142,7 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
     if (initialPrompt && !hasProcessedInitialPrompt.current && visible) {
       hasProcessedInitialPrompt.current = true;
       
-      // Check if API key is available
       if (!apiKey) {
-        // Show API key input and queue the prompt
         setShowApiKeyInput(true);
         setInput(initialPrompt);
         return;
@@ -144,7 +151,7 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
       // Automatically send the prompt
       generateOpenSCAD(initialPrompt);
     }
-  }, [initialPrompt, apiKey, visible]);
+  }, [initialPrompt, visible, apiKey]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -158,7 +165,6 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
     localStorage.setItem('gemini_api_key', apiKey);
     setShowApiKeyInput(false);
     
-    // If there's a queued prompt (from landing page), send it now
     if (input.trim()) {
       setTimeout(() => {
         generateOpenSCAD(input.trim(), selectedImage || undefined);
@@ -254,7 +260,16 @@ CRITICAL RULES:
 5. Add realistic details and proper proportions for new elements
 6. Ensure the modified code will render without errors
 7. If adding new features, integrate them seamlessly with existing code
-${imageData ? '8. If an image is provided, analyze it and incorporate its features into the 3D model' : ''}
+8. ALWAYS include OpenSCAD Customizer parameters for key dimensions and features using special comments
+9. Format parameters like: /* [Section Name] */ followed by variable = value; // [min:max] or // [option1, option2]
+${imageData ? '10. If an image is provided, analyze it and incorporate its features into the 3D model' : ''}
+
+CUSTOMIZER PARAMETER EXAMPLE:
+/* [Basic Parameters] */
+// Radius of the object
+radius = 10; // [5:50]
+// Height of the object
+height = 20; // [10:100]
 
 User's modification request: ${prompt}
 
@@ -270,7 +285,22 @@ CRITICAL RULES:
 6. Add realistic details like rounded edges, proper curves, and fine features
 7. Use variables for easy customization
 8. Ensure the code is production-ready and will render without errors
-${imageData ? '9. If an image is provided, analyze it carefully and create a 3D model that matches its shape, proportions, and features' : ''}
+9. ALWAYS include OpenSCAD Customizer parameters for key dimensions and features using special comments
+10. Format parameters like: /* [Section Name] */ followed by variable = value; // [min:max] or // [option1, option2]
+${imageData ? '11. If an image is provided, analyze it carefully and create a 3D model that matches its shape, proportions, and features' : ''}
+
+CUSTOMIZER PARAMETER EXAMPLE:
+/* [Basic Parameters] */
+// Radius of the object
+radius = 10; // [5:50]
+// Height of the object
+height = 20; // [10:100]
+// Number of sides
+sides = 6; // [3:12]
+
+/* [Advanced] */
+// Enable feature
+enable_feature = true;
 
 User request: ${prompt}
 
@@ -279,65 +309,63 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
       // Build request parts
       const requestParts: any[] = [{ text: systemPrompt }];
       
-      // Add image if provided
-      if (imageData) {
-        const base64Data = imageData.split(',')[1];
-        const mimeType = imageData.split(',')[0].split(':')[1].split(';')[0];
-        requestParts.push({
-          inline_data: {
-            mime_type: mimeType,
-            data: base64Data
-          }
-        });
-      }
-
-      // Try Groq first (better rate limits), fallback to Gemini
-      const groqKey = process.env.REACT_APP_GROQ_API_KEY;
       let generatedText = '';
-      
-      if (groqKey && !imageData) {
-        // Use Groq for text-only requests (no vision support)
-        try {
-          console.log('🚀 Using Groq API...');
-          const groqResponse = await fetch(
-            'https://api.groq.com/openai/v1/chat/completions',
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${groqKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                  { role: 'system', content: systemPrompt },
-                  ...conversationHistory.slice(0, -1).map(msg => ({
-                    role: msg.role === 'user' ? 'user' : 'assistant',
-                    content: msg.parts[0].text
-                  })),
-                  { role: 'user', content: prompt }
-                ],
-                temperature: 0.7,
-                max_tokens: 8192,
-              })
-            }
-          );
 
-          if (groqResponse.ok) {
-            const groqData = await groqResponse.json();
-            generatedText = groqData.choices?.[0]?.message?.content || '';
-            console.log('✅ Groq API succeeded');
-          } else {
-            console.warn('⚠️ Groq API failed with status:', groqResponse.status);
-          }
-        } catch (error) {
-          console.warn('⚠️ Groq API error, falling back to Gemini:', error);
+      // Use Groq for image-to-3D, Gemini for text prompts
+      if (imageData) {
+        // Use Groq for image-to-3D conversion
+        const groqKey = process.env.REACT_APP_GROQ_API_KEY;
+        
+        if (!groqKey) {
+          throw new Error('Groq API key not configured. Please add REACT_APP_GROQ_API_KEY to your .env file.');
         }
-      }
 
-      // Fallback to Gemini if Groq failed or image is present
-      if (!generatedText) {
-        console.log('🔄 Using Gemini API...');
+        console.log('🚀 Using Groq API for image-to-3D...');
+        
+        const groqMessages: any[] = [
+          { role: 'system', content: systemPrompt },
+          ...conversationHistory.slice(0, -1).map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.parts[0].text
+          })),
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: imageData } }
+            ]
+          }
+        ];
+
+        const groqResponse = await fetch(
+          'https://api.groq.com/openai/v1/chat/completions',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${groqKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'llama-3.2-90b-vision-preview',
+              messages: groqMessages,
+              temperature: 0.7,
+              max_tokens: 8192,
+            })
+          }
+        );
+
+        if (!groqResponse.ok) {
+          const errorText = await groqResponse.text();
+          throw new Error(`Groq API Error: ${groqResponse.status} - ${groqResponse.statusText}. ${errorText}`);
+        }
+
+        const groqData = await groqResponse.json();
+        generatedText = groqData.choices?.[0]?.message?.content || '';
+        console.log('✅ Groq API succeeded');
+      } else {
+        // Use Gemini for text-only prompts
+        console.log('🚀 Using Gemini API for text prompt...');
+        
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
           {
@@ -402,7 +430,16 @@ Generate the OpenSCAD code now (just the code, nothing else):`;
       if (model) {
         model.setSource(code);
         
-        // Automatically render after code is generated with retry logic
+        // First check syntax to extract parameters
+        console.log('Checking syntax to extract parameters...');
+        try {
+          await model.checkSyntax();
+          console.log('Syntax check completed - parameters extracted');
+        } catch (error) {
+          console.error('Syntax check failed:', error);
+        }
+        
+        // Then automatically render after code is generated with retry logic
         const attemptRender = async (retries = 3) => {
           for (let i = 0; i < retries; i++) {
             try {
