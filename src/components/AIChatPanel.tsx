@@ -4,7 +4,16 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { ModelContext } from './contexts';
 import { useAuth } from '../contexts/AuthContext';
-import { addMessageToSession, updateSession, getSession } from '../firebase/firestore';
+import { 
+  addMessageToSession, 
+  updateSession, 
+  getSession, 
+  subscribeToSession,
+  addCollaborator,
+  updateCollaboratorActivity,
+  removeCollaborator,
+  CollaboratorInfo
+} from '../firebase/firestore';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -25,6 +34,14 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasProcessedInitialPrompt = useRef(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [collaborators, setCollaborators] = useState<CollaboratorInfo[]>([]);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+
+  // Generate random color for collaborator
+  const getRandomColor = () => {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
   useEffect(() => {
     const savedKey = localStorage.getItem('gemini_api_key');
@@ -38,7 +55,7 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
     const sessionId = localStorage.getItem('currentSessionId');
     if (sessionId) {
       setCurrentSessionId(sessionId);
-      loadSessionMessages(sessionId);
+      setupRealtimeSession(sessionId);
     } else {
       // Clear messages for new chat
       setMessages([]);
@@ -53,6 +70,86 @@ export default function AIChatPanel({ visible, onClose, initialPrompt }: { visib
       localStorage.removeItem('initialPrompt');
     }
   }, []);
+
+  // Setup real-time session listener
+  const setupRealtimeSession = async (sessionId: string) => {
+    // Clean up previous subscription
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+    }
+
+    // Subscribe to session updates
+    const unsubscribe = subscribeToSession(sessionId, async (session) => {
+      if (session) {
+        // Update messages from real-time data
+        const loadedMessages: Message[] = session.messages.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          image: msg.image
+        }));
+        setMessages(loadedMessages);
+
+        // Update collaborators
+        if (session.collaborators) {
+          setCollaborators(session.collaborators);
+        }
+
+        // Update model code if changed
+        if (session.modelCode && model && model.source !== session.modelCode) {
+          model.setSource(session.modelCode);
+          
+          // Check syntax to extract parameters
+          try {
+            await model.checkSyntax();
+          } catch (error) {
+            console.error('Syntax check failed:', error);
+          }
+        }
+      }
+    });
+
+    unsubscribeRef.current = unsubscribe;
+
+    // Add current user as collaborator if logged in
+    if (user) {
+      try {
+        await addCollaborator(sessionId, {
+          userId: user.uid,
+          displayName: user.displayName || user.email || 'Anonymous',
+          email: user.email || '',
+          color: getRandomColor()
+        });
+
+        // Update activity every 30 seconds
+        const activityInterval = setInterval(() => {
+          updateCollaboratorActivity(sessionId, user.uid);
+        }, 30000);
+
+        // Cleanup on unmount
+        return () => {
+          clearInterval(activityInterval);
+          removeCollaborator(sessionId, user.uid);
+          if (unsubscribeRef.current) {
+            unsubscribeRef.current();
+          }
+        };
+      } catch (error) {
+        console.error('Error setting up collaborator:', error);
+      }
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+      if (currentSessionId && user) {
+        removeCollaborator(currentSessionId, user.uid);
+      }
+    };
+  }, [currentSessionId, user]);
 
   const loadSessionMessages = async (sessionId: string) => {
     try {

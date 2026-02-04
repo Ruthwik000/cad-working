@@ -1,6 +1,6 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 
-import React, { CSSProperties, useEffect, useState } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import {MultiLayoutComponentId, State, StatePersister} from '../state/app-state'
 import { Model } from '../state/model';
@@ -13,13 +13,88 @@ import { ConfirmDialog } from 'primereact/confirmdialog';
 import CustomizerPanel from './CustomizerPanel';
 import AIChatPanel from './AIChatPanel';
 import LandingPage from './LandingPage';
+import ShareButton from './ShareButton';
+import CollaboratorsPanel from './CollaboratorsPanel';
+import AuthDialog from './AuthDialog';
+import { subscribeToSession, CollaboratorInfo } from '../firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 
 // Editor Component (main workspace)
 function EditorWorkspace({model, state, leftWidth, setLeftWidth, rightChatWidth, setRightChatWidth, rightEditorWidth, setRightEditorWidth, viewerHeight, setViewerHeight}: any) {
   const navigate = useNavigate();
   const { sessionId } = useParams();
+  const { user } = useAuth();
   const [wasmReady, setWasmReady] = useState(false);
+  const [collaborators, setCollaborators] = useState<CollaboratorInfo[]>([]);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  // Check if user needs to login for shared session
+  useEffect(() => {
+    const checkSessionAccess = async () => {
+      if (sessionId && !sessionChecked) {
+        setSessionChecked(true);
+        
+        // If user is not logged in, show auth dialog immediately
+        if (!user) {
+          console.log('User not logged in, showing auth dialog');
+          setShowAuthDialog(true);
+          return;
+        }
+        
+        // User is logged in, try to access session
+        try {
+          const { getSession, updateSession } = await import('../firebase/firestore');
+          const session = await getSession(sessionId);
+          
+          if (session) {
+            // Check if user already has this session
+            const existingSession = localStorage.getItem(`session_${sessionId}_${user.uid}`);
+            
+            if (!existingSession && session.isShared) {
+              // Add to user's shared sessions
+              try {
+                const sharedWith = session.sharedWith || [];
+                if (!sharedWith.includes(user.uid)) {
+                  await updateSession(sessionId, {
+                    sharedWith: [...sharedWith, user.uid]
+                  });
+                }
+                localStorage.setItem(`session_${sessionId}_${user.uid}`, 'true');
+                console.log('Session added to user\'s shared sessions');
+              } catch (error) {
+                console.error('Error adding session to user:', error);
+              }
+            }
+          } else {
+            console.log('Session not found');
+          }
+        } catch (error) {
+          console.error('Error accessing session:', error);
+          // If there's a permission error, show auth dialog
+          if (!user) {
+            setShowAuthDialog(true);
+          }
+        }
+      }
+    };
+    
+    checkSessionAccess();
+  }, [sessionId, user, sessionChecked]);
+
+  // Subscribe to session for collaborators
+  useEffect(() => {
+    if (sessionId) {
+      const unsubscribe = subscribeToSession(sessionId, (session) => {
+        if (session && session.collaborators) {
+          setCollaborators(session.collaborators);
+        }
+      });
+      
+      return () => unsubscribe();
+    }
+  }, [sessionId]);
 
   // Show loading indicator while WASM initializes
   useEffect(() => {
@@ -60,7 +135,6 @@ function EditorWorkspace({model, state, leftWidth, setLeftWidth, rightChatWidth,
       // Clear session if no sessionId in URL (new chat)
       localStorage.removeItem('currentSessionId');
     }
-
     // Open AI chat if there's an initial prompt
     const initialPrompt = localStorage.getItem('initialPrompt');
     if (initialPrompt && !state.view.aiChatVisible) {
@@ -342,6 +416,17 @@ function EditorWorkspace({model, state, leftWidth, setLeftWidth, rightChatWidth,
       {/* Bottom Footer */}
       <Footer />
       <ConfirmDialog />
+      
+      {/* Auth Dialog for shared sessions */}
+      <AuthDialog 
+        visible={showAuthDialog} 
+        onHide={() => {
+          setShowAuthDialog(false);
+          navigate('/');
+        }} 
+      />
+      
+      {/* Collaborators Panel - Now hidden, will show in popup */}
     </div>
   );
 }
